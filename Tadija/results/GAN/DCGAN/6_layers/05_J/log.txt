@@ -1,0 +1,80 @@
+Heartbeat type: J (Nodal (junctional) premature beat)
+
+Model: Deep Convolutional Generative Adversarial Network (DCGAN)
+Generator: 7 transposed convolutional layers
+
+#----------------------------------------------------------------------------------------------#
+
+class DCGenerator(nn.Module):
+	def __init__(self):
+		super(DCGenerator,self).__init__()
+		self.main=nn.Sequential(
+			nn.ConvTranspose1d(100,2048,4,1,0,bias=True),
+			nn.BatchNorm1d(2048),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(2048,1024,4,1,0,bias=True),
+			nn.BatchNorm1d(1024),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(1024,512,4,2,1,bias=True),
+			nn.BatchNorm1d(512),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(512,256,3,2,1,bias=True),
+			nn.BatchNorm1d(256),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(256,128,4,2,1,bias=True),
+			nn.BatchNorm1d(128),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(128,64,4,2,1,bias=True),
+			nn.BatchNorm1d(64),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(64,1,4,2,1,bias=True),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,100,1)
+		x=self.main(x)
+		x=x.view(-1,216)
+		return x
+
+#----------------------------------------------------------------------------------------------#
+
+Discriminator: 6 convolutional layers
+
+#----------------------------------------------------------------------------------------------#
+
+class DCDiscriminator(nn.Module):
+	def __init__(self):
+		super(DCDiscriminator,self).__init__()
+		self.main=nn.Sequential(
+			nn.Conv1d(1,64,4,2,1,bias=False),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(64,128,4,2,1,bias=False),
+			nn.BatchNorm1d(128),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(128,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(256,512,4,2,1,bias=False),
+			nn.BatchNorm1d(512),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(512,1024,4,2,1,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(1024,1,5,2,0,bias=False),
+			nn.Sigmoid(),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,1,216)
+		return self.main(x)
+
+#----------------------------------------------------------------------------------------------#
+
+Optimizers: Adam
+Learning rate: 0.0002
+Betas: (0.5,0.999)
+
+Loss: BCELoss (Binary cross entropy loss)
+
+Batch size: 200
+Training steps (steps of one batch): 2000

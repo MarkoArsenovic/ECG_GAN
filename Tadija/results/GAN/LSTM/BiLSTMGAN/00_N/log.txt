@@ -1,0 +1,108 @@
+Heartbeat type: N (Normal beat)
+
+Model: BiLSTMGAN
+Generator: BiLSTM + LSTM + Dropout + Linear
+
+#----------------------------------------------------------------------------------------------#
+
+class BiLSTMGenerator(nn.Module):
+	def __init__(self):
+		super(BiLSTMGenerator,self).__init__()
+
+		self.lstm_cell_forward=nn.LSTMCell(8,16)
+		self.lstm_cell_backward=nn.LSTMCell(8,16)
+
+		self.lstm_cell=nn.LSTMCell(32,64)
+
+		self.dropout=nn.Dropout(0.5)
+
+		self.dense=nn.Linear(64,1)
+
+	def forward(self,x):
+		hs_forward=torch.zeros(x.size(0),16)
+		cs_forward=torch.zeros(x.size(0),16)
+		hs_backward=torch.zeros(x.size(0),16)
+		cs_backward=torch.zeros(x.size(0),16)
+		hs_lstm=torch.zeros(x.size(0),64)
+		cs_lstm=torch.zeros(x.size(0),64)
+
+		torch.nn.init.kaiming_normal_(hs_forward)
+		torch.nn.init.kaiming_normal_(cs_forward)
+		torch.nn.init.kaiming_normal_(hs_backward)
+		torch.nn.init.kaiming_normal_(cs_backward)
+		torch.nn.init.kaiming_normal_(hs_lstm)
+		torch.nn.init.kaiming_normal_(cs_lstm)
+		
+		x=x.view(216,-1,8)
+
+		forward,backward=[],[]
+
+		for i in range(216):
+		 	hs_forward,cs_forward=self.lstm_cell_forward(x[i],(hs_forward,cs_forward))
+		 	forward.append(hs_forward)
+		 	
+		for i in reversed(range(216)):
+		 	hs_backward,cs_backward=self.lstm_cell_backward(x[i],(hs_backward,cs_backward))
+		 	backward.append(hs_backward)
+
+		backward.reverse()
+
+		tmp=[]
+		for fwd,bwd in zip(forward,backward):
+			input_tensor=torch.cat((fwd,bwd),1)
+			hs_lstm,cs_lstm=self.lstm_cell(input_tensor,(hs_lstm,cs_lstm))
+			tmp.append(hs_lstm)
+
+		x=None
+		for hs in tmp:
+			hs=self.dropout(hs)
+			hs=self.dense(hs)
+			if x==None:
+				x=hs
+			else:
+				x=torch.cat((x,hs),1)
+
+		return x
+
+#----------------------------------------------------------------------------------------------#
+
+Discriminator: 6 convolutional layers
+
+#----------------------------------------------------------------------------------------------#
+
+class DCDiscriminator(nn.Module):
+	def __init__(self):
+		super(DCDiscriminator,self).__init__()
+		self.main=nn.Sequential(
+			nn.Conv1d(1,64,4,2,1,bias=False),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(64,128,4,2,1,bias=False),
+			nn.BatchNorm1d(128),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(128,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(256,512,4,2,1,bias=False),
+			nn.BatchNorm1d(512),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(512,1024,4,2,1,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(1024,1,5,2,0,bias=False),
+			nn.Sigmoid(),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,1,216)
+		return self.main(x)
+
+#----------------------------------------------------------------------------------------------#
+
+Optimizers: Adam
+Learning rate: 0.0002
+Betas: (0.5,0.999)
+
+Loss: BCELoss (Binary cross entropy loss)
+
+Batch size: 200
+Training steps (steps of one batch): 2000

@@ -1,0 +1,92 @@
+Heartbeat type: N (Normal beat)
+
+Model: Wasserstein Generative Adversarial Network
+Generator: 9 transposed convolutional layers
+
+#----------------------------------------------------------------------------------------------#
+
+class W9Generator(nn.Module):
+	def __init__(self):
+		super(W9Generator,self).__init__()
+		self.main=nn.Sequential(
+			nn.ConvTranspose1d(100,2048,4,1,0,bias=True),
+			nn.BatchNorm1d(2048),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(2048,1024,4,1,0,bias=True),
+			nn.BatchNorm1d(1024),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(1024,512,4,1,0,bias=True),
+			nn.BatchNorm1d(512),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(512,256,5,1,1,bias=True),
+			nn.BatchNorm1d(256),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(256,128,4,2,1,bias=True),
+			nn.BatchNorm1d(128),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(128,64,4,1,0,bias=True),
+			nn.BatchNorm1d(64),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(64,32,4,2,1,bias=True),
+			nn.BatchNorm1d(32),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(32,16,4,2,1,bias=True),
+			nn.BatchNorm1d(16),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(16,1,4,2,1,bias=True),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,100,1)
+		x=self.main(x)
+		x=x.view(-1,216)
+		return x
+
+#----------------------------------------------------------------------------------------------#
+
+Discriminator: 9 convolutional layers
+
+#----------------------------------------------------------------------------------------------#
+
+class W9Discriminator(nn.Module):
+	def __init__(self):
+		super(W9Discriminator,self).__init__()
+		self.main=nn.Sequential(
+			nn.Conv1d(1,16,4,2,1,bias=False),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(16,32,4,2,1,bias=False),
+			nn.BatchNorm1d(32),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(32,64,4,2,1,bias=False),
+			nn.BatchNorm1d(64),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(64,128,4,1,0,bias=False),
+			nn.BatchNorm1d(128),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(128,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(256,512,5,1,1,bias=False),
+			nn.BatchNorm1d(512),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(512,1024,4,1,0,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(1024,2048,4,1,0,bias=False),
+			nn.ConvTranspose1d(2048,1,4,1,0,bias=False),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,1,216)
+		x=self.main(x)
+		x.view(-1,1)
+		return x
+
+#----------------------------------------------------------------------------------------------#
+
+Optimizers: RMSprop
+Learning rate: 0.00005
+weight_cliping_limit: 0.01
+
+Batch size: 200
+Training steps (steps of one batch): 5000

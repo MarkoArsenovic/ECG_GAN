@@ -1,0 +1,114 @@
+Heartbeat type: N (Normal beat)
+
+Model: BiLSTMDCGAN
+Generator: BiLSTM + LSTM + Dropout + Linear + 3 transposed convolutional layers
+
+#----------------------------------------------------------------------------------------------#
+
+class BiLSTMDCGenerator(nn.Module):
+	def __init__(self):
+		super(BiLSTMDCGenerator,self).__init__()
+
+		self.lstm_cell_forward=nn.LSTMCell(5,100)
+		self.lstm_cell_backward=nn.LSTMCell(5,100)
+
+		self.lstm_cell=nn.LSTMCell(200,200)
+
+		self.dropout=nn.Dropout(0.5)
+
+		self.dense=nn.Linear(200,27)
+
+		self.cnn=nn.Sequential(
+			nn.ConvTranspose1d(1,128,4,2,1,bias=True),
+			nn.BatchNorm1d(128),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(128,64,4,2,1,bias=True),
+			nn.BatchNorm1d(64),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(64,1,4,2,1,bias=True),
+		)
+
+	def forward(self,x):
+		hs_forward=torch.zeros(x.size(0),100)
+		cs_forward=torch.zeros(x.size(0),100)
+		hs_backward=torch.zeros(x.size(0),100)
+		cs_backward=torch.zeros(x.size(0),100)
+		hs_lstm=torch.zeros(x.size(0),200)
+		cs_lstm=torch.zeros(x.size(0),200)
+
+		torch.nn.init.kaiming_normal_(hs_forward)
+		torch.nn.init.kaiming_normal_(cs_forward)
+		torch.nn.init.kaiming_normal_(hs_backward)
+		torch.nn.init.kaiming_normal_(cs_backward)
+		torch.nn.init.kaiming_normal_(hs_lstm)
+		torch.nn.init.kaiming_normal_(cs_lstm)
+		
+		x=x.view(20,-1,5)
+
+		forward,backward=[],[]
+
+		for i in range(20):
+		 	hs_forward,cs_forward=self.lstm_cell_forward(x[i],(hs_forward,cs_forward))
+		 	forward.append(hs_forward)
+		 	
+		for i in reversed(range(20)):
+		 	hs_backward,cs_backward=self.lstm_cell_backward(x[i],(hs_backward,cs_backward))
+		 	backward.append(hs_backward)
+
+		backward.reverse()
+
+		for fwd,bwd in zip(forward,backward):
+			input_tensor=torch.cat((fwd,bwd),1)
+			hs_lstm,cs_lstm=self.lstm_cell(input_tensor,(hs_lstm,cs_lstm))
+
+		x=hs_lstm
+		x=self.dropout(x)
+		x=self.dense(x)
+		x=x.view(-1,1,27)
+		x=self.cnn(x)
+		x=x.view(-1,216)
+
+		return x
+
+#----------------------------------------------------------------------------------------------#
+
+Discriminator: 6 convolutional layers
+
+#----------------------------------------------------------------------------------------------#
+
+class DCDiscriminator(nn.Module):
+	def __init__(self):
+		super(DCDiscriminator,self).__init__()
+		self.main=nn.Sequential(
+			nn.Conv1d(1,64,4,2,1,bias=False),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(64,128,4,2,1,bias=False),
+			nn.BatchNorm1d(128),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(128,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(256,512,4,2,1,bias=False),
+			nn.BatchNorm1d(512),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(512,1024,4,2,1,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(1024,1,5,2,0,bias=False),
+			nn.Sigmoid(),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,1,216)
+		return self.main(x)
+
+#----------------------------------------------------------------------------------------------#
+
+Optimizers: Adam
+Learning rate: 0.0002
+Betas: (0.5,0.999)
+
+Loss: BCELoss (Binary cross entropy loss)
+
+Batch size: 200
+Training steps (steps of one batch): 2000
