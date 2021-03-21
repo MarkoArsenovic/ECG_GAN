@@ -1,4 +1,4 @@
-from models import WGenerator,WDiscriminator,W9Generator,W9Discriminator
+from models import WGenerator,WDiscriminator,W8Generator,W8Discriminator,W9Generator,W9Discriminator
 from build_dataset import build_dataset
 from helper_functions import initialize,ode_loss
 import torch
@@ -12,10 +12,12 @@ import matplotlib.pyplot as plt
 
 def train_wgan(batch_size,train_steps,model_dir,heartbeat_type,use_simulator=True):
 	#generator=WGenerator()
-	generator=W9Generator()
+	generator=W8Generator()
+	#generator=W9Generator()
 	generator.apply(initialize)
 	#discriminator=WDiscriminator()
-	discriminator=W9Discriminator()
+	discriminator=W8Discriminator()
+	#discriminator=W9Discriminator()
 	discriminator.apply(initialize)
 	
 	data_set=build_dataset(heartbeat_type)
@@ -138,4 +140,6 @@ if __name__=="__main__":
 	#train_wgan(200,2000,"GAN\\WGAN\\6_layers\\02_R","R",use_simulator=False)
 	#train_wgan(200,2000,"GAN\\WGAN\\6_layers\\03_A","A",use_simulator=False)
 
-	train_wgan(200,5000,"GAN\\WGAN\\9_layers\\00_N","N",use_simulator=False)
+	#train_wgan(200,5000,"GAN\\WGAN\\9_layers\\00_N","N",use_simulator=False)
+
+	train_wgan(200,4000,"GAN\\WGAN\\8_layers\\00_N","N",use_simulator=False)

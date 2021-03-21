@@ -61,6 +61,78 @@ class DCDiscriminator(nn.Module):
 		return self.main(x)
 
 
+# DCGAN (G:9 layers, D:8 layers)
+
+class DC8Generator(nn.Module):
+	def __init__(self):
+		super(DC8Generator,self).__init__()
+		self.main=nn.Sequential(
+			nn.ConvTranspose1d(100,8192,4,1,0,bias=True),
+			nn.BatchNorm1d(8192),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(8192,4096,4,1,0,bias=True),
+			nn.BatchNorm1d(4096),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(4096,2048,4,2,1,bias=True),
+			nn.BatchNorm1d(2048),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(2048,1024,3,1,1,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(1024,512,3,2,1,bias=True),
+			nn.BatchNorm1d(512),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(512,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(256,128,4,2,1,bias=False),
+			nn.BatchNorm1d(128),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(128,64,3,1,1,bias=False),
+			nn.BatchNorm1d(64),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(64,1,4,2,1,bias=False),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,100,1)
+		x=self.main(x)
+		x=x.view(-1,216)
+		return x
+
+class DC8Discriminator(nn.Module):
+	def __init__(self):
+		super(DC8Discriminator,self).__init__()
+		self.main=nn.Sequential(
+			nn.Conv1d(1,64,4,2,1,bias=False),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(64,128,4,2,1,bias=False),
+			nn.BatchNorm1d(128),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(128,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(256,512,3,1,1,bias=False),
+			nn.BatchNorm1d(512),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(512,1024,4,2,1,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(1024,2048,4,2,1,bias=False),
+			nn.BatchNorm1d(2048),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(2048,4096,3,1,1,bias=False),
+			nn.BatchNorm1d(4096),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(4096,1,6,2,0,bias=False),
+			nn.Sigmoid(),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,1,216)
+		return self.main(x)
+
+
 # WGAN (G:7 layers, D:6 layers)
 
 class WGenerator(nn.Module):
@@ -120,6 +192,77 @@ class WDiscriminator(nn.Module):
 		x=self.main(x)
 		x.view(-1,1)
 		return x
+
+
+# WGAN (G:9 layers, D:8 layers)
+
+class W8Generator(nn.Module):
+	def __init__(self):
+		super(W8Generator,self).__init__()
+		self.main=nn.Sequential(
+			nn.ConvTranspose1d(100,8192,4,1,0,bias=True),
+			nn.BatchNorm1d(8192),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(8192,4096,4,1,0,bias=True),
+			nn.BatchNorm1d(4096),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(4096,2048,4,2,1,bias=True),
+			nn.BatchNorm1d(2048),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(2048,1024,3,1,1,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(1024,512,3,2,1,bias=True),
+			nn.BatchNorm1d(512),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(512,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(256,128,4,2,1,bias=False),
+			nn.BatchNorm1d(128),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(128,64,3,1,1,bias=False),
+			nn.BatchNorm1d(64),
+			nn.ReLU(True),
+			nn.ConvTranspose1d(64,1,4,2,1,bias=False),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,100,1)
+		x=self.main(x)
+		x=x.view(-1,216)
+		return x
+
+class W8Discriminator(nn.Module):
+	def __init__(self):
+		super(W8Discriminator,self).__init__()
+		self.main=nn.Sequential(
+			nn.Conv1d(1,64,4,2,1,bias=False),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(64,128,4,2,1,bias=False),
+			nn.BatchNorm1d(128),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(128,256,4,2,1,bias=False),
+			nn.BatchNorm1d(256),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(256,512,3,1,1,bias=False),
+			nn.BatchNorm1d(512),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(512,1024,4,2,1,bias=False),
+			nn.BatchNorm1d(1024),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(1024,2048,4,2,1,bias=False),
+			nn.BatchNorm1d(2048),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(2048,4096,3,1,1,bias=False),
+			nn.BatchNorm1d(4096),
+			nn.LeakyReLU(0.2,inplace=True),
+			nn.Conv1d(4096,1,6,2,0,bias=False),
+		)
+
+	def forward(self,x):
+		x=x.view(-1,1,216)
+		return self.main(x)
 
 
 # WGAN (G: 9 layers, D: 9 layers)

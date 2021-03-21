@@ -1,4 +1,4 @@
-from models import DCGenerator,DCDiscriminator
+from models import DCGenerator,DCDiscriminator,DC8Generator,DC8Discriminator
 from build_dataset import build_dataset
 from helper_functions import initialize,ode_loss
 import torch
@@ -9,10 +9,13 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+
 def train_dcgan(batch_size,train_steps,model_dir,heartbeat_type,use_simulator=True):
-	generator=DCGenerator()
+	#generator=DCGenerator()
+	generator=DC8Generator()
 	generator.apply(initialize)
-	discriminator=DCDiscriminator()
+	#discriminator=DCDiscriminator()
+	discriminator=DC8Discriminator()
 	discriminator.apply(initialize)
 	
 	data_set=build_dataset(heartbeat_type)
@@ -22,8 +25,10 @@ def train_dcgan(batch_size,train_steps,model_dir,heartbeat_type,use_simulator=Tr
 	cross_entropy_loss=nn.BCELoss()
 	if use_simulator:
 		mse_loss=nn.MSELoss()
-	g_optimizer=optim.Adam(generator.parameters(),lr=0.0002,betas=(0.5,0.999))
-	d_optimizer=optim.Adam(discriminator.parameters(),lr=0.0002,betas=(0.5,0.999))
+	#g_optimizer=optim.Adam(generator.parameters(),lr=0.0002,betas=(0.5,0.999))
+	#d_optimizer=optim.Adam(discriminator.parameters(),lr=0.0002,betas=(0.5,0.999))
+	g_optimizer=optim.Adam(generator.parameters(),lr=0.00005,betas=(0.5,0.999))
+	d_optimizer=optim.Adam(discriminator.parameters(),lr=0.00005,betas=(0.5,0.999))
 
 	ce_d_real_hist=[]
 	ce_d_fake_hist=[]
@@ -129,5 +134,7 @@ def train_dcgan(batch_size,train_steps,model_dir,heartbeat_type,use_simulator=Tr
 		'optimizer_d_state_dict': d_optimizer.state_dict(),
 	},os.path.join(model_dir,'trained_gan'))
 
+
 if __name__=="__main__":
-	train_dcgan(200,2000,"GAN\\WithSimulator\\DCSimGAN\\00_N","N",use_simulator=True)
+	#train_dcgan(200,2000,"GAN\\WithSimulator\\DCSimGAN\\00_N","N",use_simulator=True)
+	train_dcgan(200,4000,"GAN\\DCGAN\\8_layers\\00_N","N",use_simulator=False)
