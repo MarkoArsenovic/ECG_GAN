@@ -49,48 +49,48 @@ def train_and_predict(model, X_train, X_test, y_train, y_test):
 
 choose_methode = "Perceptron"
 
-if choose_methode ==  "PassiveAggressiveClassifier" or True: #  67.07951871853324 %
-    #model = PassiveAggressiveClassifier(C = 0.5, random_state = 5) 
-    #train_and_predict(model, X_train, X_test, y_train, y_test)
-    pass
-if choose_methode == "Perceptron" or True: # 53.49441064963245 %
-    #model = Perceptron()
-    #train_and_predict(model, X_train, X_test, y_train, y_test)
-    pass
-if choose_methode == "SGDClassifier" or True:   #84.50585754166107 %
-    #model = SGDClassifier() 
-    #train_and_predict(model, X_train, X_test, y_train, y_test)
-    pass
-if choose_methode == "LogisticRegressionCV" or True:
+if choose_methode ==  "PassiveAggressiveClassifier": #  67.07951871853324 %
+    model = PassiveAggressiveClassifier(C = 0.5, random_state = 5) 
+    train_and_predict(model, X_train, X_test, y_train, y_test)
+
+elif choose_methode == "Perceptron": # 53.49441064963245 %
+    model = Perceptron()
+    train_and_predict(model, X_train, X_test, y_train, y_test)
+    
+elif choose_methode == "SGDClassifier":   #84.50585754166107 %
+    model = SGDClassifier() 
+    train_and_predict(model, X_train, X_test, y_train, y_test)
+    
+elif choose_methode == "LogisticRegressionCV":
     # Failed to converge
     # ConvergenceWarning: lbfgs failed to converge (status=1): STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.
     # Increase the number of iterations (max_iter) or scale the data as shown in:
     #     https://scikit-learn.org/stable/modules/preprocessing.html
     # Please also refer to the documentation for alternative solver options:
     #     https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
-    #model = LogisticRegressionCV(multi_class='ovr')
-    #train_and_predict(model, X_train, X_test, y_train, y_test)
-    pass
-if choose_methode == "LogisticRegression" or True: # 83.7232265850715 %
-    #model = LogisticRegression(multi_class='ovr')
-    #train_and_predict(model, X_train, X_test, y_train, y_test)
-    pass
-if choose_methode == "LinearSVC" or True: # 77.48655995903988 %
-    #model = LinearSVC(multi_class='ovr')
-    #train_and_predict(model, X_train, X_test, y_train, y_test)
-    pass
-if choose_methode == "GaussianProcessClassifier" or True: 
+    model = LogisticRegressionCV(multi_class='ovr')
+    train_and_predict(model, X_train, X_test, y_train, y_test)
+    
+elif choose_methode == "LogisticRegression": # 83.7232265850715 %
+    model = LogisticRegression(multi_class='ovr')
+    train_and_predict(model, X_train, X_test, y_train, y_test)
+    
+elif choose_methode == "LinearSVC": # 77.48655995903988 %
+    model = LinearSVC(multi_class='ovr')
+    train_and_predict(model, X_train, X_test, y_train, y_test)
+    
+elif choose_methode == "GaussianProcessClassifier": 
     # Memory problem
-    #model = GaussianProcessClassifier(multi_class = 'one_vs_rest')
-    #train_and_predict(model, X_train, X_test, y_train, y_test)
-    pass
-if choose_methode == "GradientBoostingClassifier" or True:
+    model = GaussianProcessClassifier(multi_class = 'one_vs_rest')
+    train_and_predict(model, X_train, X_test, y_train, y_test)
+
+elif choose_methode == "GradientBoostingClassifier":
     model = GradientBoostingClassifier()
     train_and_predict(model, X_train, X_test, y_train, y_test)
 
 
 
-
+# TODO check one vs one approach
 """
 
     #One-Vs-One

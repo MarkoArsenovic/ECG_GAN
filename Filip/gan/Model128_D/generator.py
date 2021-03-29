@@ -1,5 +1,6 @@
 import torch.nn as nn
 
+# DC 3 layer generator 
 class Generator(nn.Module):
     def __init__(self, ngpu, noise):
         super(Generator, self).__init__()

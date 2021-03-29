@@ -31,8 +31,10 @@ def load_train_test_ECG_dateset():
             spamreader = list(csv.reader(record_file, delimiter=',', quotechar='|'))
             for row in range(1, len(spamreader)):
                 signals.insert(row, int((spamreader[row])[1]))
+
                 
         """
+        Show one full signal
         if r == 0:
             plt.title("Record")
             plt.plot(signals)
@@ -57,7 +59,8 @@ def load_train_test_ECG_dateset():
                             y.append(class_index)
                         break
             print(len(x))
-        """            
+        """      
+        Show one sample      
         if r == 0:
             plt.title("One sample")
             plt.plot(x[0])
@@ -71,13 +74,21 @@ from config import confuguration
 import os
 import shutil
 
-
+# Delete if dateset folder already exist
 if os.path.isdir('./dataset'):
 	shutil.rmtree('./dataset/')
 
-
+# Recreate dateset folder
 os.mkdir('./dataset')
 
+# make directory of each class
+#|   \---gan
+#|       +---dataset
+#|       |   \---0
+#|       |   \---1
+#|       |   \---2
+#|       |   ...
+#|       |   \---N 
 for ecg_class in range(len(confuguration.classes)):
 	os.mkdir('./dataset/'+str(ecg_class))
 
@@ -87,6 +98,7 @@ X_axis, Y_axis = load_train_test_ECG_dateset()
 
 file_index = 0
 
+# Write files with data
 for index_ds in range(len(X_axis)):
 	context = ""
 	for info_ds in X_axis[index_ds]:

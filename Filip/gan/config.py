@@ -1,7 +1,14 @@
 class confuguration:
+    # Number of points the of signal left and right from the pick, that is going to be used
     kernel_size = 80 #40
-    db_path = './../../DateSet/ECG/csv/'
+
+    # Path to the csv dateset in  
+    db_path = './../dataset_csv_format/'
+    
+    # List of all classes that are going to be generated
     classes = ['N', 'L', 'R', 'A', 'V']#, '/']
+
+    # Undersample N class
     limit_class_N = 50000 # 8000 
 
 

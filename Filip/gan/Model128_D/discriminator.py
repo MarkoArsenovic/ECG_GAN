@@ -1,5 +1,7 @@
 import torch.nn as nn
 
+# TODO make in_channels passed in constructor
+# DC 3 layer discriminator 
 class Discriminator(nn.Module):
     def __init__(self, ngpu):
         super(Discriminator, self).__init__()

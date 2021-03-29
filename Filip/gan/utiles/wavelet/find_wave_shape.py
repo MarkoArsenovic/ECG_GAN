@@ -31,11 +31,6 @@ torch.manual_seed(manualSeed)
 
 
 dataset_path = "./dataset/"
-batch_size = 128
-epochs = 50
-learning_rate_D = 0.00018
-learning_rate_G = 0.0002
-noise = 32
 
 
 class ECGDataset(Dataset):
