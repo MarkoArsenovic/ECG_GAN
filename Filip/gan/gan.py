@@ -13,8 +13,8 @@ from torch.utils.data import Dataset
 
 
 
-from Model128_D.discriminator import Discriminator
-from Model128_D.generator import Generator
+from models.discriminator import Discriminator
+from models.generator import Generator
 
 import random
 
