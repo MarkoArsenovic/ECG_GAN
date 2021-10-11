@@ -89,8 +89,8 @@ python wgan_wl.py
 ```
 
 
-![alt text](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/WGAN/results/w1.png)
-![alt text](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/WGAN/results/w2.png)
+![github-small](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/WGAN/results/w1.png?raw=true)
+![github-small](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/WGAN/results/w2.png?raw=true)
 
 ## Usage of PCGAN
 
@@ -101,9 +101,9 @@ cd ./gan/PCGAN
 python train256 --batch_size=256 --channel=128 --init_step=2 --lrD=0.0008 --lrG=0.001 --n_critic=1 --path='./../../dataset/' --pixel_norm=False --tanh=True --total_iter=10000 --trial_name='experiment-1' --z_dim=125
 ```
 
-![alt text](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/PCGAN/Results/p0.png)
-![alt text](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/PCGAN/Results/p1.png)
-![alt text](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/PCGAN/Results/p2.png)
+![github-small](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/PCGAN/Results/p0.png?raw=true)
+![github-small](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/PCGAN/Results/p1.png?raw=true)
+![github-small](https://github.com/MarkoArsenovic/ECG_GAN/tree/ProgressiveGan/Filip/gan/PCGAN/Results/p2.png?raw=true)
 
 
 
