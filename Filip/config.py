@@ -1,8 +1,15 @@
 class confuguration:
-    kernel_size = 80 #40
-    db_path = './../DateSet/ECG/csv/'
-    classes = ['N', 'L', 'R', 'A', 'V', '/']
-    limit_class_N = 50000 # 8000 
+    # Number of points the of signal left and right from the pick, that is going to be used
+    kernel_size = 128 #40
+
+    # Path to the csv dateset in  
+    db_path = './MITBIH/'
+    
+    # List of all classes that are going to be generated
+    classes = ['N', 'L', 'R', 'A', 'V']#, '/']# N S V Q 9 4   - P Q R S T
+
+    # Undersample N class
+    limit_class_N = 5000000 # 8000 
 
 
 

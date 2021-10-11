@@ -102,13 +102,13 @@ class ConvBlock(nn.Module):
         convs = [EqualConv1d(in_channel, out_channel, kernel1, padding=pad1)]
         if pixel_norm:
             convs.append(PixelNorm())
-        convs.append(nn.LeakyReLU(0.1))
+        convs.append(nn.LeakyReLU(0.3))
         convs.append(EqualConv1d(out_channel, out_channel, kernel2, padding=pad2))
         if pixel_norm:
             convs.append(PixelNorm())
-        convs.append(nn.LeakyReLU(0.1))
+        convs.append(nn.LeakyReLU(0.3))
         
-        convs.append(nn.Dropout(0.2)) 
+        convs.append(nn.Dropout(0.5)) 
 
         self.conv = nn.Sequential(*convs)
 
@@ -118,10 +118,7 @@ class ConvBlock(nn.Module):
 
 
 def upscale(feat, step):
-    if step !=6:
-        return F.interpolate(feat, scale_factor=2, mode='linear', align_corners=False)
-    else:
-        return F.interpolate(feat, scale_factor=1.25, mode='linear', align_corners=False)
+    return F.interpolate(feat, scale_factor=2, mode='linear', align_corners=False)
 
 class Generator(nn.Module):
     def __init__(self, input_code_dim=128, in_channel=128, pixel_norm=True, tanh=True):
@@ -152,10 +149,7 @@ class Generator(nn.Module):
         self.max_step = 6
 
     def progress(self, feat, module, other_factor):
-        if other_factor:
-            out = F.interpolate(feat, scale_factor=1.25, mode='linear', align_corners=False)
-        else:
-            out = F.interpolate(feat, scale_factor=2, mode='linear', align_corners=False)
+        out = F.interpolate(feat, scale_factor=2, mode='linear', align_corners=False)
         out = module(out)
         return out
 
@@ -207,7 +201,7 @@ class Discriminator(nn.Module):
     def __init__(self, feat_dim=128):
         super().__init__()
 
-        self.progression = nn.ModuleList([ConvBlock(160, feat_dim//4, 3, 1),
+        self.progression = nn.ModuleList([ConvBlock(feat_dim//4, feat_dim//4, 3, 1),
                                           ConvBlock(feat_dim//4, feat_dim//2, 3, 1),
                                           ConvBlock(feat_dim//2, feat_dim, 3, 1),
                                           ConvBlock(feat_dim, feat_dim, 3, 1),
@@ -216,7 +210,7 @@ class Discriminator(nn.Module):
                                           ConvBlock(feat_dim+1, feat_dim , 3, 1, 4, 0)])
                                           
         
-        self.from_rgb = nn.ModuleList([EqualConv1d(1, 160, 1),
+        self.from_rgb = nn.ModuleList([EqualConv1d(1, feat_dim//4, 1),
                                        EqualConv1d(1, feat_dim//4, 1),
                                        EqualConv1d(1, feat_dim//2, 1),
                                        EqualConv1d(1, feat_dim, 1),
@@ -230,10 +224,7 @@ class Discriminator(nn.Module):
 
     def forward(self, input_signal, step=0, alpha=-1):
         
-        if(step == 6):
-            input = input_signal.reshape([len(input_signal), 1, 160])
-        else:
-            input = input_signal.reshape([len(input_signal), 1, 16 * (2 ** (step-2))])
+        input = input_signal.reshape([len(input_signal), 1, 16 * (2 ** (step-2))])
             
         for i in range(step, -1, -1):      
             index = self.n_layer - i - 1
@@ -248,16 +239,10 @@ class Discriminator(nn.Module):
 
             out = self.progression[index](out)
             if i > 0:
-                if i != 6:
-                    out = F.interpolate(out, scale_factor=0.5, mode='linear', align_corners=False)
-                else:
-                    out = F.interpolate(out, scale_factor=0.8, mode='linear', align_corners=False) 
+                out = F.interpolate(out, scale_factor=0.5, mode='linear', align_corners=False)
                     
                 if i == step and 0 <= alpha < 1:
-                    if i != 6:
-                        skip_rgb = F.interpolate(input, scale_factor=0.5, mode='linear', align_corners=False) 
-                    else:
-                        skip_rgb = F.interpolate(input, scale_factor=0.8, mode='linear', align_corners=False) 
+                    skip_rgb = F.interpolate(input, scale_factor=0.5, mode='linear', align_corners=False) 
                         
                     skip_rgb = self.from_rgb[index + 1](skip_rgb)
                     out = (1 - alpha) * skip_rgb + alpha * out

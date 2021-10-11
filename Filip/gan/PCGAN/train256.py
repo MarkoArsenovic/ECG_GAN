@@ -11,7 +11,7 @@ from torch.autograd import Variable, grad
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms, utils
 
-from progan_modules import Generator, Discriminator
+from progan_modules256 import Generator, Discriminator
 
 from os import system
 
@@ -22,25 +22,29 @@ import matplotlib.pyplot as plt
 
 def normalize(value, linear = True):
     if linear:
-        return value/2100
+        return (value - 799) / 501
+        #return value/2100
     else:
         return (value - 953.4888085135459) /106
 
 def denormalize(value, linear = True):
     if linear:
-        return value * 2100
+        return (value * 501) + 799
+        #return value * 2100
     else:
         return (value * 106) + 953.4888085135459
     
 def normalize_tensor(value, linear = True):
     if linear:
-        return  value.div(2100)
+        return value.sub(799).div(501)
+        #return  value.div(2100)
     else:
         return value.sub(953.4888085135459).div(106)
 
 def denormalize_tensor(value, linear = True):
     if linear:
-        return value.mul(2100)
+        return value.mul(501).add(799)
+        #return value.mul(2100)
     else:
         return value.mul(106).add(953.4888085135459)
 
@@ -55,7 +59,7 @@ class ECGDataset(Dataset):
     def __init__(self, data_root, length):
         self.samples = []
         self.labels = []
-        max_counter = 160/length
+        max_counter = 256/length
         for classname in os.listdir(data_root):
             class_folder = os.path.join(data_root, classname)
 
@@ -66,18 +70,26 @@ class ECGDataset(Dataset):
                     self.sample = []
                     counter = 0
                     sum_of_values = 0
+                    skip_invalid = True
+                    add_sample = True
                     for value in sample_file.read().split('\n'):
                         if value != '':
-                            sum_of_values += normalize(int(value))
+                            if (int(float(value))) < 800 or (int(float(value))) > 1300:
+                                add_sample = False
+                                break
+                            sum_of_values += normalize(int(float(value)), True)
                             counter += 1
                             if (counter >= max_counter):
-                                avg_of_values = sum_of_values / int(counter)
-                                self.sample.append(avg_of_values)
+                                if skip_invalid:
+                                    avg_of_values = sum_of_values / int(counter)
+                                    self.sample.append(avg_of_values)
+                                else:
+                                    skip_invalid = True
                                 counter -= max_counter
                                 sum_of_values = 0
-                                
-                    self.samples.append(self.sample)
-                    self.labels.append(int(classname))
+                    if add_sample:
+                        self.samples.append(self.sample)
+                        self.labels.append(int(classname))
         self.value = torch.FloatTensor(self.samples)
         self.labels = torch.FloatTensor(self.labels)
 
@@ -97,25 +109,12 @@ def imagefolder_loader(path):
     return loader
 
 
-def sample_data(dataloader, image_size=4):
-    transform = transforms.Compose([
-        #transforms.Resize(image_size+int(image_size*0.2)+1),
-        #transforms.ToTensor(),
-        #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-    print(dataloader)
-    print(image_size)
-    loader = dataloader(transform)
-
-    return loader
-
-
 def train(generator, discriminator, init_step, loader, total_iter=600000):
     step = init_step # can be 1 = 8, 2 = 16, 3 = 32, 4 = 64, 5 = 128, 6 = 128
 
     #data_loader = sample_data(loader, 4 * 2 ** step)
         
-    signals = ECGDataset(data_root = args.path, length =  4 * 2 ** step)
+    signals = ECGDataset(data_root = args.path, length =  16 * 2 ** (step - 2))
     loader = torch.utils.data.DataLoader(signals, batch_size = batch_size, shuffle=True,num_workers = 2)
     
     dataset = iter(loader)
@@ -149,8 +148,8 @@ def train(generator, discriminator, init_step, loader, total_iter=600000):
     log_file.close()
 
     from shutil import copy
-    copy('train.py', log_folder+'/train_%s.py'%post_fix)
-    copy('progan_modules.py', log_folder+'/model_%s.py'%post_fix)
+    copy('train256.py', log_folder+'/train_%s.py'%post_fix)
+    copy('progan_modules256.py', log_folder+'/model_%s.py'%post_fix)
 
     alpha = 0
     one = torch.tensor(1, dtype=torch.float).to(device)
@@ -175,7 +174,7 @@ def train(generator, discriminator, init_step, loader, total_iter=600000):
                 step = 6
             #data_loader = sample_data(loader, 4 * 2 ** step)
             
-            signals = ECGDataset(data_root = args.path, length =  4 * 2 ** step)
+            signals = ECGDataset(data_root = args.path, length =  16 * 2 ** (step-2)) # 23 4->16
             loader = torch.utils.data.DataLoader(signals, batch_size = batch_size, shuffle=True,num_workers = 2)
             dataset = iter(loader)
 
@@ -210,7 +209,7 @@ def train(generator, discriminator, init_step, loader, total_iter=600000):
         real_predict = real_predict.mean() \
             - 0.001 * (real_predict ** 2).mean()
         real_predict.backward(mone)
-
+        
         # sample input data: vector for Generator
         gen_z = torch.randn(b_size, input_code_size).to(device)
 
@@ -222,11 +221,9 @@ def train(generator, discriminator, init_step, loader, total_iter=600000):
 
         ### gradient penalty for D
         eps = torch.rand(b_size, 1, 1).to(device)#, 1).to(device)
+        
 
-        if(step == 6):
-            real_image = real_image.data.reshape([128, 1,  160])
-        else:
-            real_image = real_image.data.reshape([128, 1,  16 * (2 ** (step - 2))])
+        real_image = real_image.data.reshape([b_size, 1,  16 * (2 ** (step - 2))])
         
         x_hat = eps * real_image.data + (1 - eps) * fake_image.detach().data
         x_hat.requires_grad = True
@@ -263,12 +260,12 @@ def train(generator, discriminator, init_step, loader, total_iter=600000):
             g_optimizer.step()
             accumulate(g_running, generator)
 
-        if (i + 1) % 50 == 0 or i==0:
+        if (i + 1) % 100 == 0 or i==0:
             with torch.no_grad():
                 images = g_running(torch.randn(5 * 10, input_code_size).to(device), step=step, alpha=alpha).data.cpu()
 
                 for img in range(4):
-                    plt.plot(np.linspace(1, len(images[0][0]), num = len(images[0][0])), denormalize_tensor(images[img][0].mul(106).add(953.4888085135459)))
+                    plt.plot(np.linspace(1, len(images[0][0]), num = len(images[0][0])), denormalize_tensor(images[img][0], True))
                     plt.savefig("./"+log_folder+"/sample/log" + str(i+1) + "_"+str(img)+".png")
                     plt.show()
 
@@ -288,7 +285,7 @@ def train(generator, discriminator, init_step, loader, total_iter=600000):
             except:
                 pass
 
-        if (i+1)%50 == 0:
+        if (i+1)%100 == 0:
             state_msg = (f'{i + 1}; G: {gen_loss_val/(500//n_critic):.3f}; D: {disc_loss_val/500:.3f};'
                 f' Grad: {grad_loss_val/500:.3f}; Alpha: {alpha:.3f}')
             
@@ -335,18 +332,21 @@ if __name__ == '__main__':
     g_running = Generator(in_channel=args.channel, input_code_dim=input_code_size, pixel_norm=args.pixel_norm, tanh=args.tanh).to(device)
     
     ## you can directly load a pretrained model here
-    #generator.load_state_dict(torch.load('/home/panonit/Documents/ECG_GAN/Filip/Test/Progressive-GAN-pytorch/trial_experiment-1_2021-08-13_9_27_40/checkpoint/005000_g.model'))
+    #generator.load_state_dict(torch.load('/home/panonit/Documents/ECG_GAN/Filip/Test/Progressive-GAN-pytorch/trial_experiment-1_2021-08-27_10_19_49/checkpoint/008000_g.model'))
+    #generator.load_state_dict(torch.load('/home/panonit/Documents/ECG_GAN/Filip/Test/Progressive-GAN-pytorch/trial_experiment-1_2021-08-29_20_17_24/checkpoint/016500_g.model'))
     #g_running.load_state_dict(torch.load('checkpoint/150000_g.model'))
-    #discriminator.load_state_dict(torch.load('checkpoint/150000_d.model'))
+    #g_running.load_state_dict(torch.load('/home/panonit/Documents/ECG_GAN/Filip/Test/Progressive-GAN-pytorch/trial_experiment-1_2021-08-29_20_17_24/checkpoint/016500_g.model'))
+    
+    #discriminator.load_state_dict(torch.load('/home/panonit/Documents/ECG_GAN/Filip/Test/Progressive-GAN-pytorch/trial_experiment-1_2021-08-29_20_17_24/checkpoint/016500_d.model'))
     
     g_running.train(False)
-
-    g_optimizer = optim.Adam(generator.parameters(), lr=args.lrG, betas=(0.0, 0.99))
-    d_optimizer = optim.Adam(discriminator.parameters(), lr=args.lrD, betas=(0.0, 0.99))
+    print(args.lrG)
+    g_optimizer = optim.Adam(generator.parameters(), lr=args.lrG, betas=(0.0, 0.5)) #0.99
+    d_optimizer = optim.Adam(discriminator.parameters(), lr=args.lrD, betas=(0.0, 0.5)) #0.99
 
     accumulate(g_running, generator, 0)
 
-    signals = ECGDataset(data_root = args.path, length = 4)
+    signals = ECGDataset(data_root = args.path, length = 256)
     loader = torch.utils.data.DataLoader(signals, batch_size = batch_size, shuffle=True,num_workers = 2)
 
     train(generator, discriminator, args.init_step, loader, args.total_iter)
