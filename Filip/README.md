@@ -116,7 +116,7 @@ Diffrence in confusion matrix and metrics, like Accuracy, Recall, Precision, F1 
 
 ## Results
 
-**Classificacion models are trained on original dataset:**
+**The Classificacion models are trained on the original dataset**
 
 Linear SVM
 
@@ -157,7 +157,7 @@ Logistic regression
 | Linear SVM with SDG         |    0.929    |    0.770    |     0.915     |    0.823     |
 | Logistic regression         |    0.936    |    0.806    |   **0.936**   |    0.806     |
 
-**Classificacion models are trained on original dataset, with synthetic 2048 samples for each class, using PCGAN:**
+**The Classificacion models are trained on the original dataset, with synthetic 2048 samples for each class, using PCGAN:**
 
 Linear SVM
 
@@ -198,7 +198,7 @@ Logistic regression
 | Linear SVM with SDG         |  0.922 (-0.007)  |  0.787 (+0.011) |  0.876 (-0.039)  |  0.814 (-0.009) |
 | Logistic regression         |  0.934 (-0.002)  |  0.815 (+0.009) |  0.896 (-0.040)  |  0.806 (+0.044) |
 
-**Classificacion models are trained on original dataset, with synthetic 2048 samples for each class except N, using PCGAN:**
+**The Classificacion models are trained on the original dataset, with synthetic 2048 samples for each class except N, using PCGAN:**
 
 Linear SVM
 
@@ -236,6 +236,46 @@ Logistic regression
 | Linear SVM                  |  0.933 (-0.0039) |  0.821 (+0.0076)|  0.885 (-0.0211) |  0.849 (-0.0034) |
 | Linear SVM with SDG         |  0.923 (-0.0055) |  0.820 (+0.0509)|  0.848 (-0.0661) |  0.832 (+0.0094) |
 | Logistic regression         |  0.931 (-0.0046) |  0.822 (+0.0169)|  0.880 (-0.0553) |  0.848 (+0.0835) |
+
+
+**The Classificacion models are trained on the original dataset, with synthetic 1000 samples for each class except N, using PCGAN:**
+
+Linear SVM
+
+|     | (N) | (L) | (R) | (A) | (V) |
+| --- | --- | --- | --- | --- | --- |
+| (N) | -21 | -4  | -1  |  31 | -5  |
+| (L) | -1  |  1  |  0  |  1  | -1  |
+| (R) | -7  |  0  |  27 | -20 |  0  |
+| (A) |  3  |  0  | -1  | -2  |  0  |
+| (V) | -10 | -3  |  0  |  15 | -2  |
+
+Linear SVM with SDG
+
+|     | (N) | (L) | (R) | (A) | (V) |
+| --- | --- | --- | --- | --- | --- |
+| (N) |-54  |-25  | 36  | 0   | 43  |
+| (L) | 10  |-12  | 0   |-1   | 3   |
+| (R) |-101 | 0   | 195 |-94  | 0   |
+| (A) | 1   | 0   | 6   |-6   | 0   |
+| (V) |-102 |-46  | 32  |-17  | 185 |
+
+Logistic regression
+
+|     | (N) | (L) | (R) | (A) | (V) |
+| --- | --- | --- | --- | --- | --- |
+| (N) |  0  | -3  | -1  |  14 | -10 |
+| (L) |  0  |  0  |  0  |  0  |  0  |
+| (R) | -15 |  0  |  35 | -20 |  0  |
+| (A) |  7  |  0  | -1  | -6  |  0  |
+| (V) |  14 | -2  | -1  |  4  | -15 |
+
+
+|                             |      Accuracy    |      Recall     |     Precision    |   F1 score       |
+| --------------------------  | ---------------- | --------------- | ---------------- | ---------------- |
+| Linear SVM                  |  0.937 (+0.0006) |  0.816 (+0.0022)|  0.907 (+0.0003) |  0.854 (+0.0013) |
+| Linear SVM with SDG         |  0.936 (+0.0072) |  0.799 (+0.0293)|  0.917 (+0.0026) |  0.847 (+0.0240) |
+| Logistic regression         |  0.936 (+0.0006) |  0.806 (+0.0006)|  0.911 (-0.0242) |  0.850 (+0.0852) |
 
 
 
